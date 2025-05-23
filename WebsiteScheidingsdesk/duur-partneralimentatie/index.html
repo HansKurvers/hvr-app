@@ -1,0 +1,869 @@
+<div id="partneralimentatie-calculator" style="font-family: 'Open Sans', Arial, sans-serif; max-width: 100%; margin: 0 auto; padding: 20px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+  <h2 style="font-size: 24px; font-weight: bold; margin-bottom: 16px; text-align: center; color: #0066cc;">Calculator Duur Partneralimentatie</h2>
+  <p style="margin-bottom: 16px; color: #333333;">Deze calculator berekent de duur van partneralimentatie op basis van de Wet herziening partneralimentatie (in werking getreden op 1 januari 2020). Vul de gevraagde gegevens in voor een berekening.</p>
+  
+  <div style="margin-bottom: 16px;">
+    <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #333333;">Huwelijksdatum (dd-mm-jjjj)</label>
+    <input type="text" id="huwelijksdatum" style="width: 100%; padding: 8px; border: 1px solid #cccccc; border-radius: 4px;" placeholder="01-01-2000">
+    <p id="error-huwelijksdatum" style="color: #e53e3e; font-size: 14px; margin-top: 4px; display: none;">Vul een geldige huwelijksdatum in (dd-mm-jjjj)</p>
+  </div>
+
+  <div style="margin-bottom: 16px;">
+    <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #333333;">Datum indiening verzoekschrift (dd-mm-jjjj)</label>
+    <input type="text" id="datumIndieningVerzoekschrift" style="width: 100%; padding: 8px; border: 1px solid #cccccc; border-radius: 4px;" placeholder="01-01-2025">
+    <p id="error-datumIndieningVerzoekschrift" style="color: #e53e3e; font-size: 14px; margin-top: 4px; display: none;">Vul een geldige datum in (dd-mm-jjjj)</p>
+  </div>
+  
+  <div style="margin-bottom: 16px;">
+    <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #333333;">Verwachte datum inschrijving echtscheiding (dd-mm-jjjj)</label>
+    <input type="text" id="datumInschrijvingEchtscheiding" style="width: 100%; padding: 8px; border: 1px solid #cccccc; border-radius: 4px;" placeholder="01-02-2025">
+    <p id="error-datumInschrijvingEchtscheiding" style="color: #e53e3e; font-size: 14px; margin-top: 4px; display: none;">Vul een geldige datum in (dd-mm-jjjj)</p>
+  </div>
+
+  <div style="margin-bottom: 16px;">
+    <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #333333;">Geboortedatum alimentatiegerechtigde (dd-mm-jjjj)</label>
+    <input type="text" id="geboortedatumAlimentatiegerechtigde" style="width: 100%; padding: 8px; border: 1px solid #cccccc; border-radius: 4px;" placeholder="01-01-1980">
+    <p id="error-geboortedatumAlimentatiegerechtigde" style="color: #e53e3e; font-size: 14px; margin-top: 4px; display: none;">Vul een geldige geboortedatum in (dd-mm-jjjj)</p>
+  </div>
+  
+  <div style="margin-bottom: 16px;">
+    <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #333333;">Heeft u kinderen jonger dan 12 jaar?</label>
+    <div style="display: flex; align-items: center; margin-bottom: 8px;">
+      <input type="checkbox" id="heeftKinderen" style="margin-right: 8px;">
+      <span>Ja, we hebben kinderen jonger dan 12 jaar</span>
+    </div>
+    
+    <div id="jongste-kind-container" style="display: none; margin-top: 12px;">
+      <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #333333;">Geboortedatum jongste kind (dd-mm-jjjj)</label>
+      <input type="text" id="geboortedatumJongsteKind" style="width: 100%; padding: 8px; border: 1px solid #cccccc; border-radius: 4px;" placeholder="01-01-2020">
+      <p id="error-geboortedatumJongsteKind" style="color: #e53e3e; font-size: 14px; margin-top: 4px; display: none;">Vul een geldige geboortedatum in (dd-mm-jjjj)</p>
+    </div>
+  </div>
+
+  <p id="error-datumVolgorde" style="color: #e53e3e; font-size: 14px; margin-bottom: 16px; display: none;">De datums zijn niet in de juiste volgorde. De huwelijksdatum moet vóór de datum indiening verzoekschrift liggen, en de datum indiening verzoekschrift moet vóór of gelijk zijn aan de datum inschrijving echtscheiding.</p>
+  
+  <!-- Beslisboom visualisatie -->
+  <div id="beslisboom-container" style="margin-top: 24px; margin-bottom: 24px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; background-color: #f8fafc; display: none;">
+    <h3 style="font-size: 20px; font-weight: bold; margin-bottom: 16px; color: #0066cc; text-align: center;">Beslisboom Duur Partneralimentatie</h3>
+    
+    <div style="overflow-x: auto; overflow-y: hidden; width: 100%;">
+      <svg id="beslisboom-svg" width="100%" height="100%" viewBox="0 0 950 1100" preserveAspectRatio="xMidYMid meet" style="max-width: 100%; height: auto; display: block;">
+        <!-- Achtergrond -->
+        <rect x="0" y="0" width="950" height="1100" fill="#f9fafb" />
+        
+        <!-- Start knoop -->
+        <circle id="knoop-start" cx="475" cy="50" r="20" fill="#3b82f6" stroke="none"></circle>
+        <text x="475" y="55" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Start</text>
+        
+        <!-- Verticale lijn van start naar eerste vraag -->
+        <line id="startLine" x1="475" y1="70" x2="475" y2="100" stroke="#94a3b8" stroke-width="2"></line>
+        
+        <!-- Jongste kind vraag -->
+        <rect id="jongsteKindNode" x="400" y="100" width="150" height="80" rx="5" fill="#f97316" opacity="0.9" stroke="none"></rect>
+        <text x="475" y="130" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Jongste kind</text>
+        <text x="475" y="150" text-anchor="middle" fill="white" font-size="12" font-weight="bold">jonger dan</text>
+        <text x="475" y="170" text-anchor="middle" fill="white" font-size="12" font-weight="bold">12 jaar?</text>
+        
+        <!-- Splits van jongste kind vraag - met cirkels -->
+        <line id="jongsteKindJaLine" x1="475" y1="180" x2="475" y2="230" stroke="#94a3b8" stroke-width="2"></line>
+        <line id="jongsteKindJaBranch" x1="475" y1="230" x2="625" y2="230" stroke="#94a3b8" stroke-width="2"></line>
+        <line id="jongsteKindJaDown" x1="625" y1="230" x2="625" y2="280" stroke="#94a3b8" stroke-width="2"></line>
+        
+        <line id="jongsteKindNeeLine" x1="475" y1="180" x2="475" y2="230" stroke="#94a3b8" stroke-width="2"></line>
+        <line id="jongsteKindNeeBranch" x1="475" y1="230" x2="325" y2="230" stroke="#94a3b8" stroke-width="2"></line>
+        <line id="jongsteKindNeeDown" x1="325" y1="230" x2="325" y2="280" stroke="#94a3b8" stroke-width="2"></line>
+        
+        <circle id="jongsteKindJaCircle" cx="625" cy="230" r="15" fill="white" stroke="#94a3b8" stroke-width="2"></circle>
+        <text id="jongsteKindJaText" x="625" y="235" text-anchor="middle" fill="#64748b" font-size="12" font-weight="600">Ja</text>
+        
+        <circle id="jongsteKindNeeCircle" cx="325" cy="230" r="15" fill="white" stroke="#94a3b8" stroke-width="2"></circle>
+        <text id="jongsteKindNeeText" x="325" y="235" text-anchor="middle" fill="#64748b" font-size="12" font-weight="600">Nee</text>
+        
+        <!-- AOW bereikt vraag (centrale positie) -->
+        <rect id="aowNode" x="400" y="280" width="150" height="80" rx="5" fill="#d946ef" opacity="0.9" stroke="none"></rect>
+        <text x="475" y="310" text-anchor="middle" fill="white" font-size="12" font-weight="bold">AOW-leeftijd</text>
+        <text x="475" y="330" text-anchor="middle" fill="white" font-size="12" font-weight="bold">binnen</text>
+        <text x="475" y="350" text-anchor="middle" fill="white" font-size="12" font-weight="bold">10 jaar?</text>
+        
+        <!-- Horizontale lijnen naar AOW vraag -->
+        <line id="horizontalToAOWLeft" x1="325" y1="280" x2="325" y2="320" stroke="#94a3b8" stroke-width="2"></line>
+        <line id="horizontalToAOWRight" x1="625" y1="280" x2="625" y2="320" stroke="#94a3b8" stroke-width="2"></line>
+        <line id="horizontalToAOWCenterLeft" x1="325" y1="320" x2="400" y2="320" stroke="#94a3b8" stroke-width="2"></line>
+        <line id="horizontalToAOWCenterRight" x1="550" y1="320" x2="625" y2="320" stroke="#94a3b8" stroke-width="2"></line>
+        
+        <!-- Splits van AOW vraag -->
+        <line id="aowJaLine" x1="550" y1="320" x2="750" y2="320" stroke="#94a3b8" stroke-width="2"></line>
+        <line id="aowJaDown" x1="750" y1="320" x2="750" y2="500" stroke="#94a3b8" stroke-width="2"></line>
+        
+        <line id="aowNeeLine" x1="400" y1="320" x2="200" y2="320" stroke="#94a3b8" stroke-width="2"></line>
+        <line id="aowNeeDown" x1="200" y1="320" x2="200" y2="460" stroke="#94a3b8" stroke-width="2"></line>
+        
+        <circle id="aowJaCircle" cx="750" cy="320" r="15" fill="white" stroke="#94a3b8" stroke-width="2"></circle>
+        <text id="aowJaText" x="750" y="325" text-anchor="middle" fill="#64748b" font-size="12" font-weight="600">Ja</text>
+        
+        <circle id="aowNeeCircle" cx="200" cy="320" r="15" fill="white" stroke="#94a3b8" stroke-width="2"></circle>
+        <text id="aowNeeText" x="200" y="325" text-anchor="middle" fill="#64748b" font-size="12" font-weight="600">Nee</text>
+        
+        <!-- Huwelijksduur > 15 jaar vraag -->
+        <rect id="huwelijk15Node" x="125" y="460" width="150" height="80" rx="5" fill="#06b6d4" opacity="0.9" stroke="none"></rect>
+        <text x="200" y="490" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Huwelijksduur</text>
+        <text x="200" y="510" text-anchor="middle" fill="white" font-size="12" font-weight="bold">langer dan</text>
+        <text x="200" y="530" text-anchor="middle" fill="white" font-size="12" font-weight="bold">15 jaar?</text>
+        
+        <!-- Splits huwelijk > 15 met cirkels -->
+        <line id="huwelijk15JaLine" x1="200" y1="540" x2="200" y2="590" stroke="#94a3b8" stroke-width="2"></line>
+        <line id="huwelijk15JaBranch" x1="200" y1="590" x2="400" y2="590" stroke="#94a3b8" stroke-width="2"></line>
+        <line id="huwelijk15JaDown" x1="400" y1="590" x2="400" y2="640" stroke="#94a3b8" stroke-width="2"></line>
+        
+        <line id="huwelijk15NeeLine" x1="200" y1="540" x2="200" y2="590" stroke="#94a3b8" stroke-width="2"></line>
+        <line id="huwelijk15NeeBranch" x1="200" y1="590" x2="80" y2="590" stroke="#94a3b8" stroke-width="2"></line>
+        <line id="huwelijk15NeeDown" x1="80" y1="590" x2="80" y2="640" stroke="#94a3b8" stroke-width="2"></line>
+        
+        <circle id="huwelijk15JaCircle" cx="400" cy="590" r="15" fill="white" stroke="#94a3b8" stroke-width="2"></circle>
+        <text id="huwelijk15JaText" x="400" y="595" text-anchor="middle" fill="#64748b" font-size="12" font-weight="600">Ja</text>
+        
+        <circle id="huwelijk15NeeCircle" cx="80" cy="590" r="15" fill="white" stroke="#94a3b8" stroke-width="2"></circle>
+        <text id="huwelijk15NeeText" x="80" y="595" text-anchor="middle" fill="#64748b" font-size="12" font-weight="600">Nee</text>
+        
+        <!-- Geboren voor 1970 vraag -->
+        <rect id="geboren1970Node" x="325" y="640" width="150" height="80" rx="5" fill="#10b981" opacity="0.9" stroke="none"></rect>
+        <text x="400" y="670" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Geboren voor</text>
+        <text x="400" y="690" text-anchor="middle" fill="white" font-size="12" font-weight="bold">1 januari</text>
+        <text x="400" y="710" text-anchor="middle" fill="white" font-size="12" font-weight="bold">1970?</text>
+        
+        <!-- Huwelijksduur > 10 jaar vraag -->
+        <rect id="huwelijk10Node" x="30" y="640" width="150" height="80" rx="5" fill="#eab308" opacity="0.9" stroke="none"></rect>
+        <text x="105" y="670" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Huwelijksduur</text>
+        <text x="105" y="690" text-anchor="middle" fill="white" font-size="12" font-weight="bold">langer dan</text>
+        <text x="105" y="710" text-anchor="middle" fill="white" font-size="12" font-weight="bold">10 jaar?</text>
+        
+        <!-- Splits voor Geboren voor 1970 met cirkels -->
+        <line id="geboren1970JaLine" x1="400" y1="720" x2="400" y2="770" stroke="#94a3b8" stroke-width="2"></line>
+        <line id="geboren1970JaBranch" x1="400" y1="770" x2="550" y2="770" stroke="#94a3b8" stroke-width="2"></line>
+        <line id="geboren1970JaDown" x1="550" y1="770" x2="550" y2="880" stroke="#94a3b8" stroke-width="2"></line>
+        
+        <line id="geboren1970NeeLine" x1="400" y1="720" x2="400" y2="770" stroke="#94a3b8" stroke-width="2"></line>
+        <line id="geboren1970NeeBranch" x1="400" y1="770" x2="300" y2="770" stroke="#94a3b8" stroke-width="2"></line>
+        <line id="geboren1970NeeDown" x1="300" y1="770" x2="300" y2="880" stroke="#94a3b8" stroke-width="2"></line>
+        
+        <circle id="geboren1970JaCircle" cx="550" cy="770" r="15" fill="white" stroke="#94a3b8" stroke-width="2"></circle>
+        <text id="geboren1970JaText" x="550" y="775" text-anchor="middle" fill="#64748b" font-size="12" font-weight="600">Ja</text>
+        
+        <circle id="geboren1970NeeCircle" cx="300" cy="770" r="15" fill="white" stroke="#94a3b8" stroke-width="2"></circle>
+        <text id="geboren1970NeeText" x="300" y="775" text-anchor="middle" fill="#64748b" font-size="12" font-weight="600">Nee</text>
+        
+        <!-- Splits voor Huwelijk > 10 met cirkels -->
+        <line id="huwelijk10JaLine" x1="105" y1="720" x2="105" y2="770" stroke="#94a3b8" stroke-width="2"></line>
+        <line id="huwelijk10JaBranch" x1="105" y1="770" x2="200" y2="770" stroke="#94a3b8" stroke-width="2"></line>
+        <line id="huwelijk10JaDown" x1="200" y1="770" x2="200" y2="880" stroke="#94a3b8" stroke-width="2"></line>
+        
+        <line id="huwelijk10NeeLine" x1="105" y1="720" x2="105" y2="770" stroke="#94a3b8" stroke-width="2"></line>
+        <line id="huwelijk10NeeBranch" x1="105" y1="770" x2="30" y2="770" stroke="#94a3b8" stroke-width="2"></line>
+        <line id="huwelijk10NeeDown" x1="30" y1="770" x2="30" y2="880" stroke="#94a3b8" stroke-width="2"></line>
+        
+        <circle id="huwelijk10JaCircle" cx="200" cy="770" r="15" fill="white" stroke="#94a3b8" stroke-width="2"></circle>
+        <text id="huwelijk10JaText" x="200" y="775" text-anchor="middle" fill="#64748b" font-size="12" font-weight="600">Ja</text>
+        
+        <circle id="huwelijk10NeeCircle" cx="30" cy="770" r="15" fill="white" stroke="#94a3b8" stroke-width="2"></circle>
+        <text id="huwelijk10NeeText" x="30" y="775" text-anchor="middle" fill="#64748b" font-size="12" font-weight="600">Nee</text>
+        
+        <!-- Verticale lijnen die naar het einde gaan -->
+        <line id="lineFromAOWJa" x1="750" y1="500" x2="750" y2="880" stroke="#94a3b8" stroke-width="2"></line>
+        <line id="lineToEnd1" x1="30" y1="880" x2="30" y2="880" stroke="#94a3b8" stroke-width="2"></line>
+        <line id="lineToEnd2" x1="200" y1="880" x2="200" y2="880" stroke="#94a3b8" stroke-width="2"></line>
+        <line id="lineToEnd3" x1="300" y1="880" x2="300" y2="880" stroke="#94a3b8" stroke-width="2"></line>
+        <line id="lineToEnd4" x1="550" y1="880" x2="550" y2="880" stroke="#94a3b8" stroke-width="2"></line>
+        
+        <!-- Horizontale samenvoeglijn -->
+        <line id="horizontalEndLine1" x1="30" y1="880" x2="200" y2="880" stroke="#94a3b8" stroke-width="3"></line>
+        <line id="horizontalEndLine2" x1="200" y1="880" x2="300" y2="880" stroke="#94a3b8" stroke-width="3"></line>
+        <line id="horizontalEndLine3" x1="300" y1="880" x2="550" y2="880" stroke="#94a3b8" stroke-width="3"></line>
+        <line id="horizontalEndLine4" x1="550" y1="880" x2="750" y2="880" stroke="#94a3b8" stroke-width="3"></line>
+        
+        <!-- Verticale lijn naar resultaat -->
+        <line id="finalVerticalLine" x1="475" y1="880" x2="475" y2="930" stroke="#94a3b8" stroke-width="3"></line>
+        
+        <!-- Uitkomstblok -->
+        <rect id="resultaatNode" x="275" y="930" width="400" height="120" rx="5" fill="#8b5cf6" opacity="0.9" stroke="none"></rect>
+        <text id="resultaatTitel" x="475" y="965" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Duur van de partneralimentatie:</text>
+        <text id="resultaatDuur" x="475" y="995" text-anchor="middle" fill="white" font-size="16" font-weight="bold">...</text>
+        <text id="resultaatEinddatum" x="475" y="1025" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Einddatum: ...</text>
+      </svg>
+    </div>
+  </div>
+  
+  <div style="display: flex; justify-content: center; margin-bottom: 24px;">
+    <button id="bereken-btn" style="background-color: #0066cc; color: white; font-weight: 600; padding: 8px 24px; border: none; border-radius: 4px; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: background-color 0.3s;">Bereken duur partneralimentatie</button>
+  </div>
+  
+  <div id="resultaat" style="margin-top: 24px; border: 1px solid #cccccc; padding: 16px; border-radius: 8px; background-color: #f8f8f8; display: none;">
+    <h3 style="font-size: 20px; font-weight: bold; margin-bottom: 16px; color: #0066cc;">Resultaat berekening</h3>
+    
+    <div style="margin-bottom: 24px;">
+      <div style="margin-bottom: 16px; display: flex; flex-wrap: wrap; gap: 16px;">
+        <div style="flex: 1; min-width: 200px;">
+          <p style="font-weight: 600; margin-bottom: 4px;">Huwelijksduur tot datum indiening verzoekschrift:</p>
+          <p id="resultaat-huwelijksduur"></p>
+        </div>
+        
+        <div style="flex: 1; min-width: 200px;">
+          <p style="font-weight: 600; margin-bottom: 4px;">Standaard termijn (hoofdregel):</p>
+          <p id="resultaat-standaardTermijn"></p>
+        </div>
+      </div>
+      
+      <div style="background-color: #eff6ff; border: 1px solid #bfdbfe; padding: 16px; border-radius: 8px; margin-top: 16px;">
+        <div style="margin-bottom: 8px;">
+          <p style="font-weight: 600; margin-bottom: 4px; color: #1e40af;">Definitieve duur partneralimentatie:</p>
+          <p id="resultaat-definitieveDuur" style="font-weight: bold; font-size: 16px; color: #1e40af;"></p>
+        </div>
+        
+        <div>
+          <p style="font-weight: 600; margin-bottom: 4px; color: #1e40af;">Einddatum partneralimentatie:</p>
+          <p id="resultaat-einddatumAlimentatie" style="font-weight: bold; font-size: 20px; color: #1e40af;"></p>
+        </div>
+        
+        <div style="margin-top: 8px; font-style: italic; color: #4a5568;">
+          <p>De alimentatieplicht vangt aan op de datum van inschrijving van de echtscheiding in de registers van de burgerlijke stand.</p>
+        </div>
+      </div>
+    </div>
+    
+    <div>
+      <h4 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Toepasselijke wetsartikelen:</h4>
+      <ul id="resultaat-wetsartikelen" style="list-style-type: disc; padding-left: 20px; margin-bottom: 16px;"></ul>
+      
+      <div id="resultaat-uitzonderingen-container" style="display: none;">
+        <h4 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Uitzonderingen van toepassing:</h4>
+        <ul id="resultaat-uitzonderingen" style="list-style-type: disc; padding-left: 20px; margin-bottom: 16px;"></ul>
+      </div>
+      
+      <div style="background-color: #fefce8; border: 1px solid #fef08a; padding: 12px; border-radius: 4px; margin-top: 16px;">
+        <h4 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Toelichting:</h4>
+        <p id="resultaat-toelichting"></p>
+      </div>
+      
+      <div style="background-color: #eff6ff; border: 1px solid #bfdbfe; padding: 12px; border-radius: 4px; margin-top: 16px;">
+        <p style="font-size: 14px; font-style: italic;">Let op: Deze calculator geeft een indicatie op basis van de Wet herziening partneralimentatie. Voor juridisch advies op maat raden wij aan een advocaat te raadplegen.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.active-path {
+    stroke: #ef4444 !important;
+    stroke-width: 3 !important;
+}
+
+.active-node {
+    stroke: #3b82f6 !important;
+    stroke-width: 3 !important;
+}
+
+.active-text {
+    fill: #ef4444 !important;
+    font-weight: bold !important;
+}
+
+.active-circle {
+    stroke: #ef4444 !important;
+    stroke-width: 3 !important;
+    fill: #fee2e2 !important;
+}
+</style>
+
+<script>
+(function() {
+    // Alle JavaScript code in een IIFE wrapper voor betere isolatie
+    
+    function toggleKindVeld() {
+        var heeftKinderen = document.getElementById('heeftKinderen').checked;
+        document.getElementById('jongste-kind-container').style.display = heeftKinderen ? 'block' : 'none';
+    }
+
+    // Event listener toevoegen na DOM load
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeCalculator);
+    } else {
+        initializeCalculator();
+    }
+
+    function initializeCalculator() {
+        var checkbox = document.getElementById('heeftKinderen');
+        if (checkbox) {
+            checkbox.addEventListener('change', toggleKindVeld);
+        }
+        
+        var berekenBtn = document.getElementById('bereken-btn');
+        if (berekenBtn) {
+            berekenBtn.addEventListener('click', berekenenDuurAlimentatie);
+        }
+    }
+
+    function parseDate(dateString) {
+        if (!dateString) return null;
+        
+        let parts;
+        
+        if (dateString.includes('-')) {
+            parts = dateString.split('-');
+        } else if (dateString.includes('/')) {
+            parts = dateString.split('/');
+        } else {
+            return null;
+        }
+        
+        let year, month, day;
+        
+        if (parts[0].length === 4) {
+            year = parseInt(parts[0], 10);
+            month = parseInt(parts[1], 10) - 1;
+            day = parseInt(parts[2], 10);
+        } else {
+            day = parseInt(parts[0], 10);
+            month = parseInt(parts[1], 10) - 1;
+            year = parseInt(parts[2], 10);
+        }
+        
+        const date = new Date(Date.UTC(year, month, day, 12, 0, 0));
+        
+        if (
+            isNaN(date.getTime()) ||
+            date.getUTCFullYear() !== year ||
+            date.getUTCMonth() !== month ||
+            date.getUTCDate() !== day
+        ) {
+            return null;
+        }
+        
+        return date;
+    }
+
+    function formatDate(date) {
+        if (!date || isNaN(date.getTime())) return '';
+        
+        const day = String(date.getUTCDate()).padStart(2, '0');
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+        const year = date.getUTCFullYear();
+        
+        return `${day}-${month}-${year}`;
+    }
+
+    function calculateDurationInDays(startDate, endDate) {
+        if (!startDate || !endDate) return 0;
+        const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
+        return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    }
+
+    function formatDuration(days) {
+        const years = Math.floor(days / 365.25);
+        const remainingDays = days % 365.25;
+        const months = Math.floor(remainingDays / 30.44);
+        const daysLeft = Math.floor(remainingDays % 30.44);
+        
+        let result = '';
+        if (years > 0) result += years + ' jaar';
+        if (months > 0) result += (result ? ' en ' : '') + months + ' maand' + (months > 1 ? 'en' : '');
+        if (daysLeft > 0 && years === 0) result += (result ? ' en ' : '') + daysLeft + ' dag' + (daysLeft > 1 ? 'en' : '');
+        
+        return result || '0 dagen';
+    }
+
+    function addDays(date, days) {
+        if (!date) return null;
+        const result = new Date(date.getTime());
+        result.setUTCDate(result.getUTCDate() + days);
+        return result;
+    }
+
+    function differenceInYears(date1, date2) {
+        if (!date1 || !date2) return 0;
+        
+        const yearsDiff = date1.getUTCFullYear() - date2.getUTCFullYear();
+        const monthsDiff = date1.getUTCMonth() - date2.getUTCMonth();
+        const daysDiff = date1.getUTCDate() - date2.getUTCDate();
+        
+        if (monthsDiff < 0 || (monthsDiff === 0 && daysDiff < 0)) {
+            return yearsDiff - 1;
+        }
+        
+        return yearsDiff;
+    }
+
+    function addMonths(date, months) {
+        if (!date) return null;
+        
+        const newDate = new Date(date.getTime());
+        const originalDay = newDate.getUTCDate();
+        
+        newDate.setUTCDate(1);
+        newDate.setUTCMonth(newDate.getUTCMonth() + months);
+        
+        const daysInNewMonth = new Date(Date.UTC(newDate.getUTCFullYear(), newDate.getUTCMonth() + 1, 0)).getUTCDate();
+        newDate.setUTCDate(Math.min(originalDay, daysInNewMonth));
+        
+        return newDate;
+    }
+
+    function addYears(date, years) {
+        if (!date) return null;
+        
+        const result = new Date(date.getTime());
+        result.setUTCFullYear(result.getUTCFullYear() + years);
+        return result;
+    }
+
+    function isAfter(date1, date2) {
+        return date1.getTime() > date2.getTime();
+    }
+
+    function isBefore(date1, date2) {
+        return date1.getTime() < date2.getTime();
+    }
+
+    function getAOWLeeftijd(geboortejaar) {
+        if (geboortejaar < 1958) return 66 + 4/12;
+        if (geboortejaar < 1961) return 66 + 7/12;
+        if (geboortejaar < 1965) return 67;
+        if (geboortejaar < 1970) return 67 + 3/12;
+        return 67 + 6/12;
+    }
+
+    function calculateAOWDate(geboortedatum) {
+        if (!geboortedatum) return null;
+        
+        const geboortejaar = geboortedatum.getUTCFullYear();
+        const aowLeeftijd = getAOWLeeftijd(geboortejaar);
+        
+        const aowJaren = Math.floor(aowLeeftijd);
+        const aowMaanden = Math.round((aowLeeftijd - aowJaren) * 12);
+        
+        let aowDatum = addYears(geboortedatum, aowJaren);
+        aowDatum = addMonths(aowDatum, aowMaanden);
+        
+        return aowDatum;
+    }
+
+    function berekenJarenTotAOW(geboortedatum, referentiedatum) {
+        if (!geboortedatum) return null;
+        
+        const aowDatum = calculateAOWDate(geboortedatum);
+        if (!aowDatum) return null;
+        
+        const verschilMs = aowDatum.getTime() - referentiedatum.getTime();
+        const jarenTotAOW = verschilMs / (1000 * 60 * 60 * 24 * 365.25);
+        
+        return Math.round(jarenTotAOW * 10) / 10;
+    }
+
+    function resetErrors() {
+        document.getElementById('error-huwelijksdatum').style.display = 'none';
+        document.getElementById('error-datumIndieningVerzoekschrift').style.display = 'none';
+        document.getElementById('error-datumInschrijvingEchtscheiding').style.display = 'none';
+        document.getElementById('error-geboortedatumAlimentatiegerechtigde').style.display = 'none';
+        document.getElementById('error-geboortedatumJongsteKind').style.display = 'none';
+        document.getElementById('error-datumVolgorde').style.display = 'none';
+    }
+
+    function resetBeslisboomMarkeringen() {
+        const activeElements = document.querySelectorAll('.active-path, .active-node, .active-text, .active-circle');
+        activeElements.forEach(element => {
+            element.classList.remove('active-path', 'active-node', 'active-text', 'active-circle');
+        });
+        
+        const circles = document.querySelectorAll('#beslisboom-svg circle');
+        circles.forEach(circle => {
+            if (circle.id && circle.id.includes('Circle') && !circle.id.includes('knoop')) {
+                circle.setAttribute('stroke', '#94a3b8');
+                circle.setAttribute('stroke-width', '2');
+                circle.setAttribute('fill', 'white');
+            }
+        });
+    }
+
+    function markeerbeslisboomPad(resultaat) {
+        resetBeslisboomMarkeringen();
+        
+        // Start
+        document.getElementById('knoop-start').setAttribute('stroke', '#3b82f6');
+        document.getElementById('knoop-start').setAttribute('stroke-width', '3');
+        document.getElementById('startLine').classList.add('active-path');
+        
+        // Jongste kind
+        document.getElementById('jongsteKindNode').classList.add('active-node');
+        
+        const heeftKind = document.getElementById('heeftKinderen').checked;
+        
+        if (heeftKind) {
+            document.getElementById('jongsteKindJaLine').classList.add('active-path');
+            document.getElementById('jongsteKindJaBranch').classList.add('active-path');
+            document.getElementById('jongsteKindJaDown').classList.add('active-path');
+            document.getElementById('jongsteKindJaCircle').classList.add('active-circle');
+            document.getElementById('jongsteKindJaText').classList.add('active-text');
+            document.getElementById('horizontalToAOWRight').classList.add('active-path');
+            document.getElementById('horizontalToAOWCenterRight').classList.add('active-path');
+        } else {
+            document.getElementById('jongsteKindNeeLine').classList.add('active-path');
+            document.getElementById('jongsteKindNeeBranch').classList.add('active-path');
+            document.getElementById('jongsteKindNeeDown').classList.add('active-path');
+            document.getElementById('jongsteKindNeeCircle').classList.add('active-circle');
+            document.getElementById('jongsteKindNeeText').classList.add('active-text');
+            document.getElementById('horizontalToAOWLeft').classList.add('active-path');
+            document.getElementById('horizontalToAOWCenterLeft').classList.add('active-path');
+        }
+        
+        // AOW
+        document.getElementById('aowNode').classList.add('active-node');
+        
+        if (resultaat.jarenTotAOW <= 10) {
+            document.getElementById('aowJaLine').classList.add('active-path');
+            document.getElementById('aowJaDown').classList.add('active-path');
+            document.getElementById('aowJaCircle').classList.add('active-circle');
+            document.getElementById('aowJaText').classList.add('active-text');
+            document.getElementById('lineFromAOWJa').classList.add('active-path');
+        } else {
+            document.getElementById('aowNeeLine').classList.add('active-path');
+            document.getElementById('aowNeeDown').classList.add('active-path');
+            document.getElementById('aowNeeCircle').classList.add('active-circle');
+            document.getElementById('aowNeeText').classList.add('active-text');
+            
+            // Huwelijk > 15
+            document.getElementById('huwelijk15Node').classList.add('active-node');
+            
+            if (resultaat.huwelijksduurJaren > 15) {
+                document.getElementById('huwelijk15JaLine').classList.add('active-path');
+                document.getElementById('huwelijk15JaBranch').classList.add('active-path');
+                document.getElementById('huwelijk15JaDown').classList.add('active-path');
+                document.getElementById('huwelijk15JaCircle').classList.add('active-circle');
+                document.getElementById('huwelijk15JaText').classList.add('active-text');
+                
+                // Geboren voor 1970
+                document.getElementById('geboren1970Node').classList.add('active-node');
+                
+                if (resultaat.geboortejaarAlimentatiegerechtigde < 1970) {
+                    document.getElementById('geboren1970JaLine').classList.add('active-path');
+                    document.getElementById('geboren1970JaBranch').classList.add('active-path');
+                    document.getElementById('geboren1970JaDown').classList.add('active-path');
+                    document.getElementById('geboren1970JaCircle').classList.add('active-circle');
+                    document.getElementById('geboren1970JaText').classList.add('active-text');
+                    document.getElementById('lineToEnd4').classList.add('active-path');
+                } else {
+                    document.getElementById('geboren1970NeeLine').classList.add('active-path');
+                    document.getElementById('geboren1970NeeBranch').classList.add('active-path');
+                    document.getElementById('geboren1970NeeDown').classList.add('active-path');
+                    document.getElementById('geboren1970NeeCircle').classList.add('active-circle');
+                    document.getElementById('geboren1970NeeText').classList.add('active-text');
+                    document.getElementById('lineToEnd3').classList.add('active-path');
+                }
+            } else {
+                document.getElementById('huwelijk15NeeLine').classList.add('active-path');
+                document.getElementById('huwelijk15NeeBranch').classList.add('active-path');
+                document.getElementById('huwelijk15NeeDown').classList.add('active-path');
+                document.getElementById('huwelijk15NeeCircle').classList.add('active-circle');
+                document.getElementById('huwelijk15NeeText').classList.add('active-text');
+                
+                // Huwelijk > 10
+                document.getElementById('huwelijk10Node').classList.add('active-node');
+                
+                if (resultaat.huwelijksduurJaren > 10) {
+                    document.getElementById('huwelijk10JaLine').classList.add('active-path');
+                    document.getElementById('huwelijk10JaBranch').classList.add('active-path');
+                    document.getElementById('huwelijk10JaDown').classList.add('active-path');
+                    document.getElementById('huwelijk10JaCircle').classList.add('active-circle');
+                    document.getElementById('huwelijk10JaText').classList.add('active-text');
+                    document.getElementById('lineToEnd2').classList.add('active-path');
+                } else {
+                    document.getElementById('huwelijk10NeeLine').classList.add('active-path');
+                    document.getElementById('huwelijk10NeeBranch').classList.add('active-path');
+                    document.getElementById('huwelijk10NeeDown').classList.add('active-path');
+                    document.getElementById('huwelijk10NeeCircle').classList.add('active-circle');
+                    document.getElementById('huwelijk10NeeText').classList.add('active-text');
+                    document.getElementById('lineToEnd1').classList.add('active-path');
+                }
+            }
+        }
+        
+        // Eindlijnen - markeer alleen het pad dat gevolgd wordt
+        if (resultaat.jarenTotAOW <= 10) {
+            document.getElementById('horizontalEndLine4').classList.add('active-path');
+        } else if (resultaat.huwelijksduurJaren > 15) {
+            if (resultaat.geboortejaarAlimentatiegerechtigde < 1970) {
+                document.getElementById('horizontalEndLine3').classList.add('active-path');
+                document.getElementById('horizontalEndLine4').classList.add('active-path');
+            } else {
+                document.getElementById('horizontalEndLine3').classList.add('active-path');
+            }
+        } else if (resultaat.huwelijksduurJaren > 10) {
+            document.getElementById('horizontalEndLine2').classList.add('active-path');
+            document.getElementById('horizontalEndLine3').classList.add('active-path');
+        } else {
+            document.getElementById('horizontalEndLine1').classList.add('active-path');
+            document.getElementById('horizontalEndLine2').classList.add('active-path');
+            document.getElementById('horizontalEndLine3').classList.add('active-path');
+        }
+        
+        document.getElementById('finalVerticalLine').classList.add('active-path');
+        
+        // Resultaat
+        document.getElementById('resultaatNode').classList.add('active-node');
+        
+        document.getElementById('resultaatDuur').textContent = resultaat.definitieveDuur;
+        document.getElementById('resultaatEinddatum').textContent = "Einddatum: " + resultaat.einddatumAlimentatieGeformatteerd;
+    }
+
+    function berekenenDuurAlimentatie() {
+        resetErrors();
+        
+        const huwelijksdatum = document.getElementById('huwelijksdatum').value;
+        const datumIndieningVerzoekschrift = document.getElementById('datumIndieningVerzoekschrift').value;
+        const datumInschrijvingEchtscheiding = document.getElementById('datumInschrijvingEchtscheiding').value;
+        const geboortedatumAlimentatiegerechtigde = document.getElementById('geboortedatumAlimentatiegerechtigde').value;
+        const heeftKinderen = document.getElementById('heeftKinderen').checked;
+        const geboortedatumJongsteKind = heeftKinderen ? document.getElementById('geboortedatumJongsteKind').value : '';
+        
+        let hasError = false;
+        
+        const huwelijksdatumParsed = parseDate(huwelijksdatum);
+        const datumIndieningVerzoekschriftParsed = parseDate(datumIndieningVerzoekschrift);
+        const datumInschrijvingEchtscheidingParsed = parseDate(datumInschrijvingEchtscheiding);
+        const geboortedatumAlimentatiegerechtigdeParsed = parseDate(geboortedatumAlimentatiegerechtigde);
+        
+        if (!huwelijksdatumParsed) {
+            document.getElementById('error-huwelijksdatum').style.display = 'block';
+            hasError = true;
+        }
+        
+        if (!datumIndieningVerzoekschriftParsed) {
+            document.getElementById('error-datumIndieningVerzoekschrift').style.display = 'block';
+            hasError = true;
+        }
+        
+        if (!datumInschrijvingEchtscheidingParsed) {
+            document.getElementById('error-datumInschrijvingEchtscheiding').style.display = 'block';
+            hasError = true;
+        }
+        
+        if (!geboortedatumAlimentatiegerechtigdeParsed) {
+            document.getElementById('error-geboortedatumAlimentatiegerechtigde').style.display = 'block';
+            hasError = true;
+        }
+        
+        let geboortedatumJongsteKindParsed = null;
+        if (heeftKinderen) {
+            geboortedatumJongsteKindParsed = parseDate(geboortedatumJongsteKind);
+            if (!geboortedatumJongsteKindParsed) {
+                document.getElementById('error-geboortedatumJongsteKind').style.display = 'block';
+                hasError = true;
+            }
+        }
+        
+        if (huwelijksdatumParsed && datumIndieningVerzoekschriftParsed && datumInschrijvingEchtscheidingParsed) {
+            if (isAfter(huwelijksdatumParsed, datumIndieningVerzoekschriftParsed) || 
+                isAfter(datumIndieningVerzoekschriftParsed, datumInschrijvingEchtscheidingParsed)) {
+                document.getElementById('error-datumVolgorde').style.display = 'block';
+                hasError = true;
+            }
+        }
+        
+        if (hasError) {
+            return;
+        }
+        
+        const huwelijksduurDagen = calculateDurationInDays(huwelijksdatumParsed, datumIndieningVerzoekschriftParsed);
+        const huwelijksduurJaren = huwelijksduurDagen / 365.25;
+        
+        const leeftijdOpVerzoekschrift = differenceInYears(datumIndieningVerzoekschriftParsed, geboortedatumAlimentatiegerechtigdeParsed);
+        
+        const geboortejaarAlimentatiegerechtigde = geboortedatumAlimentatiegerechtigdeParsed.getUTCFullYear();
+        
+        const aowLeeftijd = getAOWLeeftijd(geboortejaarAlimentatiegerechtigde);
+        
+        const jarenTotAOW = berekenJarenTotAOW(geboortedatumAlimentatiegerechtigdeParsed, datumIndieningVerzoekschriftParsed);
+        
+        const aowDatum = calculateAOWDate(geboortedatumAlimentatiegerechtigdeParsed);
+
+        let datumKindTwaalfJaar = null;
+        let kindTermijnIsLanger = false;
+        if (heeftKinderen && geboortedatumJongsteKindParsed) {
+            datumKindTwaalfJaar = addYears(geboortedatumJongsteKindParsed, 12);
+        }
+
+        let standaardTermijnDagen = Math.floor(huwelijksduurDagen / 2);
+        const maxDagenVijfJaar = Math.floor(5 * 365.25);
+        if (standaardTermijnDagen > maxDagenVijfJaar) {
+            standaardTermijnDagen = maxDagenVijfJaar;
+        }
+
+        const einddatumStandaard = addDays(datumInschrijvingEchtscheidingParsed, standaardTermijnDagen);
+        
+        const einddatumVijfJaar = addDays(datumInschrijvingEchtscheidingParsed, Math.floor(5 * 365.25));
+        const einddatumTienJaar = addDays(datumInschrijvingEchtscheidingParsed, Math.floor(10 * 365.25));
+
+        const resultaat = {
+            huwelijksduurDagen,
+            huwelijksduurJaren,
+            huwelijksduurGeformatteerd: formatDuration(huwelijksduurDagen),
+            leeftijdOpVerzoekschrift,
+            geboortejaarAlimentatiegerechtigde,
+            aowLeeftijd,
+            jarenTotAOW,
+            standaardTermijnDagen,
+            standaardTermijnGeformatteerd: formatDuration(standaardTermijnDagen),
+            toepasselijkeWetsartikelen: [],
+            toepasselijkeUitzonderingen: [],
+            definitieveDuur: formatDuration(standaardTermijnDagen),
+            definitieveDuurDagen: standaardTermijnDagen,
+            einddatumAlimentatie: einddatumStandaard,
+            toelichting: ''
+        };
+
+        resultaat.toepasselijkeWetsartikelen.push("Artikel 1:157 lid 1 BW: De standaard termijn is de helft van de duur van het huwelijk tot datum indiening verzoekschrift met maximum 5 jaar");
+
+        if (heeftKinderen && geboortedatumJongsteKindParsed) {
+            const leeftijdKindOpVerzoekschrift = differenceInYears(datumIndieningVerzoekschriftParsed, geboortedatumJongsteKindParsed);
+            
+            if (leeftijdKindOpVerzoekschrift < 12) {
+                let vergelijkingsEinddatum;
+                
+                if (huwelijksduurJaren > 15) {
+                    if (jarenTotAOW <= 10) {
+                        if (isAfter(aowDatum, einddatumVijfJaar)) {
+                            vergelijkingsEinddatum = aowDatum;
+                        } else {
+                            vergelijkingsEinddatum = einddatumVijfJaar;
+                        }
+                    } else if (geboortejaarAlimentatiegerechtigde < 1970) {
+                        vergelijkingsEinddatum = einddatumTienJaar;
+                    } else {
+                        vergelijkingsEinddatum = einddatumVijfJaar;
+                    }
+                } else if (huwelijksduurJaren > 10) {
+                    vergelijkingsEinddatum = einddatumVijfJaar;
+                } else {
+                    vergelijkingsEinddatum = einddatumStandaard;
+                }
+                
+                if (isAfter(datumKindTwaalfJaar, vergelijkingsEinddatum)) {
+                    const kindDuurDagen = calculateDurationInDays(datumInschrijvingEchtscheidingParsed, datumKindTwaalfJaar);
+                    resultaat.toepasselijkeUitzonderingen.push("Art. 1:157 lid 4 BW: Niet eerder dan tot jongste kind 12 jaar is");
+                    resultaat.definitieveDuur = `tot jongste kind 12 jaar (${formatDuration(kindDuurDagen)})`;
+                    resultaat.definitieveDuurDagen = kindDuurDagen;
+                    resultaat.einddatumAlimentatie = datumKindTwaalfJaar;
+                    kindTermijnIsLanger = true;
+                } else {
+                    resultaat.toepasselijkeUitzonderingen.push("Art. 1:157 lid 4 BW: Jongste kind wordt 12 jaar, maar andere termijn is langer");
+                    kindTermijnIsLanger = false;
+                }
+            }
+        }
+
+        if (!kindTermijnIsLanger) {
+            if (huwelijksduurJaren > 15) {
+                if (jarenTotAOW <= 10) {
+                    let langsteEinddatum = einddatumVijfJaar;
+                    let langsteDuur = "5 jaar";
+                    let langsteDuurDagen = Math.floor(5 * 365.25);
+                    
+                    resultaat.toepasselijkeUitzonderingen.push("Art. 1:157 lid 2 BW: Huwelijk > 15 jaar, standaardtermijn 5 jaar");
+                    
+                    if (isAfter(aowDatum, langsteEinddatum)) {
+                        const aowDuurDagen = calculateDurationInDays(datumInschrijvingEchtscheidingParsed, aowDatum);
+                        langsteEinddatum = aowDatum;
+                        langsteDuur = "tot AOW-leeftijd";
+                        langsteDuurDagen = aowDuurDagen;
+                        resultaat.toepasselijkeUitzonderingen.push("Art. 1:157 lid 2 BW: Huwelijk > 15 jaar en binnen 10 jaar AOW");
+                    } else {
+                        resultaat.toepasselijkeUitzonderingen.push("Art. 1:157 lid 2 BW: AOW-leeftijd valt binnen 10 jaar, maar eerder dan 5 jaar na echtscheiding");
+                    }
+                    
+                    resultaat.definitieveDuur = langsteDuur === "5 jaar" ? "5 jaar" : langsteDuur;
+                    resultaat.definitieveDuurDagen = langsteDuurDagen;
+                    resultaat.einddatumAlimentatie = langsteEinddatum;
+                }
+                else {
+                    if (geboortejaarAlimentatiegerechtigde < 1970) {
+                        resultaat.toepasselijkeUitzonderingen.push("Art. 1:157 lid 3 BW: Huwelijk > 15 jaar, geboren vóór 1970 en AOW > 10 jaar weg");
+                        resultaat.definitieveDuur = "10 jaar";
+                        resultaat.definitieveDuurDagen = Math.floor(10 * 365.25);
+                        resultaat.einddatumAlimentatie = einddatumTienJaar;
+                    } else {
+                        resultaat.toepasselijkeUitzonderingen.push("Art. 1:157 lid 3 BW: Huwelijk > 15 jaar, geboren na 1970 en AOW > 10 jaar weg");
+                        resultaat.definitieveDuur = "5 jaar";
+                        resultaat.definitieveDuurDagen = Math.floor(5 * 365.25);
+                        resultaat.einddatumAlimentatie = einddatumVijfJaar;
+                    }
+                }
+            } 
+            else {
+                if (huwelijksduurJaren > 10) {
+                    resultaat.toepasselijkeUitzonderingen.push("Huwelijk > 10 jaar maar <= 15 jaar");
+                    resultaat.definitieveDuur = "5 jaar";
+                    resultaat.definitieveDuurDagen = Math.floor(5 * 365.25);
+                    resultaat.einddatumAlimentatie = einddatumVijfJaar;
+                } else {
+                    resultaat.toepasselijkeUitzonderingen.push("Huwelijk <= 10 jaar, standaardtermijn is helft van de huwelijksduur");
+                    resultaat.definitieveDuur = resultaat.standaardTermijnGeformatteerd;
+                    resultaat.definitieveDuurDagen = standaardTermijnDagen;
+                    resultaat.einddatumAlimentatie = einddatumStandaard;
+                }
+            }
+        }
+
+        resultaat.toelichting = "Art. 1:157 lid 7 BW (Hardheidsclausule): In bijzondere gevallen kan de rechter op verzoek de termijn verlengen als beëindiging van de alimentatie naar maatstaven van redelijkheid en billijkheid niet kan worden gevergd. Bij samenloop van de verschillende termijnen geldt de langste termijn (art. 1:157 lid 5 BW).";
+
+        resultaat.einddatumAlimentatieGeformatteerd = formatDate(resultaat.einddatumAlimentatie);
+
+        markeerbeslisboomPad(resultaat);
+
+        updateResultatenUI(resultaat);
+    }
+
+    function updateResultatenUI(resultaat) {
+        document.getElementById('resultaat-huwelijksduur').textContent = resultaat.huwelijksduurGeformatteerd;
+        
+        if (typeof resultaat.standaardTermijnGeformatteerd === 'string') {
+            document.getElementById('resultaat-standaardTermijn').textContent = resultaat.standaardTermijnGeformatteerd;
+        } else {
+            document.getElementById('resultaat-standaardTermijn').textContent = formatDuration(resultaat.standaardTermijnDagen);
+        }
+        
+        document.getElementById('resultaat-definitieveDuur').textContent = resultaat.definitieveDuur;
+        
+        document.getElementById('resultaat-einddatumAlimentatie').textContent = resultaat.einddatumAlimentatieGeformatteerd;
+        
+        const wetsartikelenList = document.getElementById('resultaat-wetsartikelen');
+        wetsartikelenList.innerHTML = '';
+        resultaat.toepasselijkeWetsartikelen.forEach(artikel => {
+            const li = document.createElement('li');
+            li.textContent = artikel;
+            wetsartikelenList.appendChild(li);
+        });
+        
+        const uitzonderingenContainer = document.getElementById('resultaat-uitzonderingen-container');
+        const uitzonderingenList = document.getElementById('resultaat-uitzonderingen');
+        
+        if (resultaat.toepasselijkeUitzonderingen.length > 0) {
+            uitzonderingenList.innerHTML = '';
+            resultaat.toepasselijkeUitzonderingen.forEach(uitzondering => {
+                const li = document.createElement('li');
+                li.textContent = uitzondering;
+                uitzonderingenList.appendChild(li);
+            });
+            uitzonderingenContainer.style.display = 'block';
+        } else {
+            uitzonderingenContainer.style.display = 'none';
+        }
+        
+        document.getElementById('resultaat-toelichting').textContent = resultaat.toelichting;
+        
+        document.getElementById('resultaat').style.display = 'block';
+        document.getElementById('beslisboom-container').style.display = 'block';
+        
+        markeerbeslisboomPad(resultaat);
+    }
+
+    // Maak belangrijke functies globaal beschikbaar indien nodig
+    window.berekenenDuurAlimentatie = berekenenDuurAlimentatie;
+})();
+</script>
