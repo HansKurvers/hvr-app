@@ -10,7 +10,7 @@ lerna-debug.log*
 .claude
 .config
 .vscode
-.git
+.git  
 .dotnet
 .npm-global
 .nvm
