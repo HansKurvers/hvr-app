@@ -344,6 +344,10 @@
                 transform: none !important;
             }
             
+            .result-item:last-child {
+                margin-bottom: 80pt; /* Extra ruimte voor footer */
+            }
+            
             .result-item h3 {
                 color: black !important;
                 font-size: 14pt;
@@ -373,13 +377,16 @@
             .print-footer {
                 display: block !important;
                 position: fixed;
-                bottom: 20pt;
-                left: 0;
-                right: 0;
+                bottom: 10pt;
+                left: 20pt;
+                right: 20pt;
                 text-align: center;
-                font-size: 9pt;
+                font-size: 8pt;
                 border-top: 1px solid #ccc;
-                padding-top: 10pt;
+                padding-top: 8pt;
+                background: white;
+                z-index: 1000;
+                height: 50pt;
             }
         }
         
@@ -1608,6 +1615,9 @@
                             page-break-inside: avoid;
                             break-inside: avoid;
                         }
+                        .result-item:last-child {
+                            margin-bottom: 80pt;
+                        }
                         .result-item h3 {
                             font-size: 14pt;
                             margin: 0 0 8pt 0;
@@ -1620,13 +1630,16 @@
                         }
                         .footer {
                             position: fixed;
-                            bottom: 20pt;
-                            left: 0;
-                            right: 0;
+                            bottom: 10pt;
+                            left: 20pt;
+                            right: 20pt;
                             text-align: center;
-                            font-size: 9pt;
+                            font-size: 8pt;
                             border-top: 1px solid #ccc;
-                            padding-top: 10pt;
+                            padding-top: 8pt;
+                            background: white;
+                            z-index: 1000;
+                            height: 50pt;
                         }
                     </style>
                 </head>
